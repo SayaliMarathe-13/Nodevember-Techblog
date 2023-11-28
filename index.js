@@ -8,7 +8,10 @@ const mongoose = require('mongoose');
 app.use(bodyParser.urlencoded({extended:true}));
 require('dotenv').config();
 const mongoURL=process.env.MongoURL;
-mongoose.connect(mongoURL).then(()=>{
+mongoose.connect(mongoURL, {
+  serverSelectionTimeoutMS: 30000, 
+  socketTimeoutMS: 45000, 
+}).then(()=>{
   console.log("connected to mongoDB");
 }).catch((err)=>{
   console.log("error in connection",err);
