@@ -5,8 +5,8 @@ app.set('view engine', 'ejs');
 const blogPostArray=require("./data");
 const bodyParser=require('body-parser');
 const mongoose = require('mongoose');
-require("dotenv").config();
 app.use(bodyParser.urlencoded({extended:true}));
+require('dotenv').config();
 const mongoURL=process.env.MongoURL;
 mongoose.connect(mongoURL).then(()=>{
   console.log("connected to mongoDB");
@@ -27,24 +27,33 @@ const User=new mongoose.model("User",signupSchema);
 app.get('/', (req, res) => {
   res.render('login');
 });
-app.post('/',(req,res)=>{
-    email=req.body.email;
-    passsword=req.body.password;
-    User.findOne({email:email,password:passsword},(err,data)=>{
-    if(data){
-      console.log("User founded");
-      res.redirect('/home');
-    }
-    else{
-      console.log("user is not valid");
-    }
-    if (err) {
-      console.error('Error finding user:', err);
-      res.status(500).json({ error: 'Internal server error' });
-      return;
-  }
-  });
-})
+app.post('/', (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  User.findOne({ email: email })
+      .then((user) => {
+          if (!user) {
+              console.log('User not found');
+              return res.redirect('/');
+          }
+
+          // Check if the password matches
+          if (user.password === password) {
+              console.log('User authenticated');
+              return res.redirect('/home');
+          } else {
+              console.log('Invalid password');
+              return res.redirect('/');
+          }
+      })
+      .catch((err) => {
+          console.error('Error finding user:', err);
+          return res.status(500).json({ error: 'Internal server error' });
+      });
+});
+
+
 app.get('/signup', (req, res) => {
   res.render('signup');
 });
